@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Revotronics 2024</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Orbitron', sans-serif;
+            background: #000;
+            color: #fff;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            padding: 3rem;
+            text-align: center;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+            border-radius: 15px;
+            min-width: 600px;
+        }
+
+        .event-name {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #0ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: #0ff;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        .countdown {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .countdown-item {
+            background: rgba(0, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px; /* Add fixed height for consistent sizing */
+        }
+
+        .number {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+            margin: 0; /* Remove margin to help with centering */
+            line-height: 1.2; /* Adjust line height for better vertical alignment */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px; /* Fixed height for numbers */
+        }
+
+        .countdown-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+            animation: shine 2s infinite;
+        }
+
+        .label {
+            font-size: 1rem;
+            color: #0ff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .venue {
+            font-size: 1.2rem;
+            color: #0ff;
+            margin-top: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(0, 255, 255, 0.8); }
+            100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .event-logo {
+            width: 250px; /* Adjust the width as needed */
+            height: auto; /* Maintain aspect ratio */
+            display: block; /* Center the image */
+            margin: 0 auto 1rem; /* Add margin below the image */
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="container">
+        <div class="event-name">
+            <img src="Revotronics_Title.png" alt="Revotronics Logo" class="event-logo"></div>
+        <div class="tagline">A National Level Technical Symposiyum Happening at REC</div>
+        <div class="countdown">
+            <div class="countdown-item">
+                <div id="days" class="number">00</div>
+                <div class="label">Days</div>
+            </div>
+            <div class="countdown-item">
+                <div id="hours" class="number">00</div>
+                <div class="label">Hours</div>
+            </div>
+            <div class="countdown-item">
+                <div id="minutes" class="number">00</div>
+                <div class="label">Minutes</div>
+            </div>
+            <div class="countdown-item">
+                <div id="seconds" class="number">00</div>
+                <div class="label">Seconds</div>
+            </div>
+        </div>
+        <div class="venue">Academic Block - REC Campus</div>
+    </div>
+
+    <script>
+        let scene, camera, renderer;
+        let geometries = [];
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('canvas'),
+                antialias: true
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000);
+            camera.position.z = 5;
+
+            // Create futuristic grid
+            const gridHelper = new THREE.GridHelper(100, 50, 0x00ffff, 0x00ffff);
+            gridHelper.position.y = -10;
+            scene.add(gridHelper);
+
+            // Create multiple geometric shapes
+            for(let i = 0; i < 50; i++) {
+                let geometry;
+                const random = Math.random();
+                
+                if(random < 0.33) {
+                    geometry = new THREE.IcosahedronGeometry(Math.random() * 0.3 + 0.1);
+                } else if(random < 0.66) {
+                    geometry = new THREE.OctahedronGeometry(Math.random() * 0.3 + 0.1);
+                } else {
+                    geometry = new THREE.TetrahedronGeometry(Math.random() * 0.3 + 0.1);
+                }
+
+                const material = new THREE.MeshPhongMaterial({
+                    color: new THREE.Color(`hsl(${180 + Math.random() * 60}, 100%, 50%)`),
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.6
+                });
+
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                mesh.position.set(
+                    (Math.random() - 0.5) * 20,
+                    (Math.random() - 0.5) * 20,
+                    (Math.random() - 0.5) * 20
+                );
+                
+                mesh.rotation.set(
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI
+                );
+
+                geometries.push({
+                    mesh: mesh,
+                    rotationSpeed: {
+                        x: (Math.random() - 0.5) * 0.02,
+                        y: (Math.random() - 0.5) * 0.02,
+                        z: (Math.random() - 0.5) * 0.02
+                    },
+                    floatSpeed: Math.random() * 0.005 + 0.002,
+                    floatOffset: Math.random() * Math.PI * 2
+                });
+                
+                scene.add(mesh);
+            }
+
+            // Add connecting lines
+            const lineMaterial = new THREE.LineBasicMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.2
+            });
+
+            for(let i = 0; i < geometries.length; i++) {
+                for(let j = i + 1; j < geometries.length; j++) {
+                    if(Math.random() > 0.05) continue;
+                    
+                    const geometry = new THREE.BufferGeometry();
+                    const points = [
+                        geometries[i].mesh.position,
+                        geometries[j].mesh.position
+                    ];
+                    geometry.setFromPoints(points);
+                    
+                    const line = new THREE.Line(geometry, lineMaterial);
+                    scene.add(line);
+                }
+            }
+
+            // Add lights
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+            
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = Date.now() * 0.001;
+
+            geometries.forEach(item => {
+                item.mesh.rotation.x += item.rotationSpeed.x;
+                item.mesh.rotation.y += item.rotationSpeed.y;
+                item.mesh.rotation.z += item.rotationSpeed.z;
+
+                // Add floating motion
+                item.mesh.position.y += Math.sin(time * item.floatSpeed + item.floatOffset) * 0.01;
+            });
+
+            scene.rotation.y = Math.sin(time * 0.1) * 0.1;
+
+            renderer.render(scene, camera);
+        }
+
+        const countDownDate = new Date("February 15, 2025 09:00:00").getTime();
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = countDownDate - now;
+
+            if (distance < 0) {
+                document.getElementById("days").textContent = "00";
+                document.getElementById("hours").textContent = "00";
+                document.getElementById("minutes").textContent = "00";
+                document.getElementById("seconds").textContent = "00";
+                clearInterval(x);
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").textContent = String(days).padStart(2, '0');
+            document.getElementById("hours").textContent = String(hours).padStart(2, '0');
+            document.getElementById("minutes").textContent = String(minutes).padStart(2, '0');
+            document.getElementById("seconds").textContent = String(seconds).padStart(2, '0');
+        }
+
+        // Rest of your initialization code remains the same
+        
+        // Initialize everything
+        init();
+        animate();
+        updateCountdown();
+        const x = setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
